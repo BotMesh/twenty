@@ -1,0 +1,77 @@
+# Build this fork into a container image and publish it to GHCR.
+#
+# The upstream project publishes twentycrm/twenty on Docker Hub, but its Docker tags have no
+# matching git tags, so a fork cannot reproduce a specific published version. We therefore
+# build what this repository actually contains and tag it by commit, which is reproducible
+# and lets a deployment pin an exact build.
+name: Release image
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Extra tag to publish alongside the commit sha (e.g. cn-1)
+        required: false
+
+concurrency:
+  group: release-image-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/twenty
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      # The monorepo build needs far more disk than a runner ships with free.
+      - name: Reclaim runner disk
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+                      /usr/local/share/boost "$AGENT_TOOLSDIRECTORY" || true
+          df -h /
+
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha,format=long,prefix=
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: packages/twenty-docker/twenty/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Record the commit, which is what upstream's published images do not carry and
+          # what made pinning this fork to a released version impossible.
+          build-args: |
+            REACT_APP_SERVER_BASE_URL=
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Summary
+        run: |
+          echo "Published:" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.meta.outputs.tags }}' | sed 's/^/- /' >> $GITHUB_STEP_SUMMARY
