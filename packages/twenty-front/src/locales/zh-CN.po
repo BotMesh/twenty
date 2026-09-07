@@ -10359,7 +10359,7 @@ msgstr "imap.example.com"
 #: src/pages/settings/admin-panel/SettingsAdminUserDetail.tsx
 #: src/pages/settings/admin-panel/SettingsAdminWorkspaceDetail.tsx
 msgid "Impersonate"
-msgstr "假装"
+msgstr "模拟登录"
 
 #. js-lingui-id: l0JGUk
 #: src/modules/settings/billing/constants/SettingsBillingPlanComparisonRows.ts
@@ -10386,7 +10386,7 @@ msgstr "模拟登录"
 #. js-lingui-id: yImXof
 #: src/pages/settings/admin-panel/SettingsAdminUserDetail.tsx
 msgid "Impersonation is disabled for this workspace"
-msgstr "工作区不支持代理功能"
+msgstr "该工作区已禁用模拟登录"
 
 #. js-lingui-id: yHueLx
 #: src/modules/settings/billing/constants/SettingsBillingPlanComparisonRows.ts
@@ -18510,7 +18510,7 @@ msgstr "停止听写"
 #. js-lingui-id: I8EmDx
 #: src/modules/information-banner/components/impersonate/InformationBannerIsImpersonating.tsx
 msgid "Stop impersonating"
-msgstr "停止假装"
+msgstr "停止模拟登录"
 
 #. js-lingui-id: juzGVI
 #: src/modules/settings/data-model/fields/forms/components/SettingsDataModelFieldLinksVariantForm.tsx
